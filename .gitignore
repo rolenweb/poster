@@ -1,3 +1,4 @@
 vendor
 cookiefile
 config/db.php
+wp_login.txt

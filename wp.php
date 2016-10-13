@@ -4,19 +4,23 @@ require 'vendor/autoload.php';
 //use SimpleXMLElement;
 use Simplon\Mysql\Mysql;
 
-$url = 'http://wordpress1/';
-$user = 'rolenweb';
-$psw = 'gfhjkm21';
+for (;;){
+	$wp_data = explode('|', file('wp_login.txt')[0]);
 
-$content = contentDatabase();
-while ($content !== null) {
-	var_dump($content);
-	$post = post($url,$user,$psw,$content['title'],$content['description'],[]);
-	error($post);
+	$url = rtrim($wp_data[0]);
+	$user = rtrim($wp_data[1]);
+	$psw = rtrim($wp_data[2]);
+
 	$content = contentDatabase();
+	while ($content !== null) {
+		var_dump($content);
+		$post = post($url,$user,$psw,$content['title'],$content['description'],[]);
+		error($post);
+		$content = contentDatabase();
+	}
+	info('Sleep 15 min');
+	sleep(900);
 }
-
-
 
 
 function post($url,$user,$psw,$title,$content,$tags){
