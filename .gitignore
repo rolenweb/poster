@@ -1,4 +1,7 @@
 vendor
 cookiefile
+runtime
 config/db.php
 wp_login.txt
+composer.phar
+composer.lock

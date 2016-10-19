@@ -3,41 +3,75 @@ require 'vendor/autoload.php';
 
 //use SimpleXMLElement;
 use Simplon\Mysql\Mysql;
+use Sabre\Xml\Reader;
 
 for (;;){
-	$wp_data = explode('|', file('wp_login.txt')[0]);
+	$wp_data = explode('|', file('wp_login.txt')[1]);
 
 	$url = rtrim($wp_data[0]);
 	$user = rtrim($wp_data[1]);
 	$psw = rtrim($wp_data[2]);
 
-	$content = contentDatabase();
-	while ($content !== null) {
+	$content = contentDatabase2();
+	base64_to_jpeg($content['base64'],__DIR__.'/runtime/pic.jpg');
+	//var_dump($content);
+	$media = loadMedia($url,$user,$psw,$content,__DIR__.'/runtime/pic.jpg');
+	$post = post($url,$user,$psw,$content['title'],$content['description'],[],$media['id']);
+	var_dump($post);
+	/*while ($content !== null) {
 		var_dump($content);
 		$post = post($url,$user,$psw,$content['title'],$content['description'],[]);
 		error($post);
 		$content = contentDatabase();
-	}
+	}*/
+	die;
 	info('Sleep 15 min');
 	sleep(900);
 }
 
 
-function post($url,$user,$psw,$title,$content,$tags){
+function post($url,$user,$psw,$title,$content,$tags,$post_thumbnail = null){
     $url_post = $url.'/xmlrpc.php';
     $content_wp = array(
         'post_type' => 'post',
         'post_content' => $content,
         'post_title' => $title,
         'post_status' => 'publish',
+        'post_thumbnail' => $post_thumbnail,
         'terms' => [
                'post_tag' => $tags,
         ],
     );
-    return getResponseError(xmlRpc($url_post, $content_wp, $user, $psw));
+    $response = xmlRpc($url_post, $content_wp, $user, $psw);
+    
+    $errors = getResponseError($response);
+    if (empty($errors) === false) {
+    	error($errors);
+    	return;
+    }
+    return getResponsePost($response);
 }
 
-function xmlRpc($url, $content, $user, $psw){
+function loadMedia($url,$user,$psw,$content,$path_file)
+{
+	$url_post = $url.'/xmlrpc.php';
+	$file = file_get_contents($path_file);
+	xmlrpc_set_type($file,'base64');
+    $content_wp = array(
+        'name' => 'name.jpg',
+        'type' => 'image/jpeg',
+        'bits' => $file,
+    );
+    $response = xmlRpc($url_post, $content_wp, $user, $psw, 'wp.uploadFile');
+    $errors = getResponseError($response);
+    if (empty($errors) === false) {
+    	error($errors);
+    	return;
+    }
+    return getResponseLoadFile($response);
+}
+
+function xmlRpc($url, $content, $user, $psw,$action = 'wp.newPost'){
         // initialize curl
         $ch = curl_init();
         // set url ie path to xmlrpc.php
@@ -51,13 +85,14 @@ function xmlRpc($url, $content, $user, $psw){
         // parameters are blog_id, username, password and content
         $params = array(1, $user, $psw, $content);
         
-        $params = xmlrpc_encode_request('wp.newPost', $params,array('encoding' => 'utf-8', 'escaping'=>'markup'));
+        $params = xmlrpc_encode_request($action, $params,array('encoding' => 'utf-8', 'escaping'=>'markup'));
         
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         // execute the request
         $response = curl_exec($ch);
         // shutdown curl
         curl_close($ch);
+        
         return $response;
 }
 
@@ -69,6 +104,7 @@ function getResponseError($xml){
                 if ($obj->fault->value->struct != NULL) {
                     if ($obj->fault->value->struct->member != NULL) {
                         foreach ($obj->fault->value->struct->member as $member) {
+                        	
                             if ($member->value->int != NULL) {
                                 $out .= 'Code: '.$member->value->int.' ';
                             }
@@ -81,6 +117,31 @@ function getResponseError($xml){
             }
         }
         return $out;
+}
+
+function getResponseLoadFile($xml){
+	$reader = new Reader();
+	$reader->xml($xml);
+	$result = $reader->parse();
+	if (empty($result['value'][0]['value'][0]['value'][0]['value'][0]['value']) === false) {
+        foreach ($result['value'][0]['value'][0]['value'][0]['value'][0]['value'] as $member) {
+        	if ($member['value'][0]['value'] === 'type' || $member['value'][0]['value'] === 'id' || $member['value'][0]['value'] === 'thumbnail' || $member['value'][0]['value'] === 'file') {
+        		$out[$member['value'][0]['value']] = $member['value'][1]['value'][0]['value'];
+        	}
+        }
+    }
+    return $out;
+}
+
+function getResponsePost($xml){
+	$out = null;
+	$reader = new Reader();
+	$reader->xml($xml);
+	$result = $reader->parse();
+	if (empty($result['value'][0]['value'][0]['value'][0]['value'][0]['value']) === false) {
+        $out = $result['value'][0]['value'][0]['value'][0]['value'][0]['value'];
+    }
+    return $out;
 }
 function connectDb()
 {
@@ -120,6 +181,19 @@ function contentDatabase()
 	];
 }
 
+function contentDatabase2()
+{
+	$post = connectDb()->fetchRow('SELECT * FROM post WHERE status = \'parsed\''); 
+	if (empty($post)) {
+		info('There are not post for posting');
+		return;
+	}
+	
+	changeStatus($post['id']);
+
+	return $post;
+}
+
 function changeStatus($id)
 {
 	$condr = [
@@ -139,6 +213,14 @@ function insertTable($table,$data)
 function updateTable($table, $condr, $data)
 {
 	connectDb()->update($table, $condr, $data);	
+}
+
+function base64_to_jpeg($base64_string, $output_file) {
+    $ifp = fopen($output_file, "wb"); 
+    $data = explode(',', $base64_string);
+    fwrite($ifp, base64_decode($data[1])); 
+    fclose($ifp); 
+    return $output_file; 
 }
 
 function error($string)
