@@ -9,7 +9,7 @@ $path_avito_runtime_file = '../parser-avito/runtime/';
 
 
 for (;;){
-	$wp_data = explode('|', file('wp_login.txt')[2]);
+	$wp_data = explode('|', file('wp_login.txt')[3]);
 
 	$url = rtrim($wp_data[0]);
 	$user = rtrim($wp_data[1]);
