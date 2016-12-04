@@ -32,7 +32,7 @@ use Simplon\Mysql\Mysql;
         }else{
             error('The content is null');
         }
-        die;
+        //die;
     }
     
 	
