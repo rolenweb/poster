@@ -21,19 +21,21 @@ use Simplon\Mysql\Mysql;
     
     if (empty($contents)) {
         error('contents are null');
+    }else{
+        foreach ($contents as $content) {
+            if(empty($content) === false) {
+                //var_dump($content);
+                $post = post($url,$user,$psw,$content['title'],$content['description'],$content['tags']);
+                error($post);
+                
+            }else{
+                error('The content is null');
+            }
+            //die;
+        }    
     }
 
-    foreach ($contents as $content) {
-        if(empty($content) === false) {
-            //var_dump($content);
-            $post = post($url,$user,$psw,$content['title'],$content['description'],$content['tags']);
-            error($post);
-            
-        }else{
-            error('The content is null');
-        }
-        //die;
-    }
+    
     
 	
 	
@@ -58,7 +60,7 @@ function posted()
 
 function createContent($rates)
 {   
-    $today = '2016-12-02'; //date("Y-m-d");
+    $today = date("Y-m-d");
     $masks = file('files/currency_mask.txt');
     $content = [];
     var_dump($rates->date);
