@@ -150,6 +150,7 @@ for (;;) {
 	file_put_contents($f_schedule, $type_proxy[$next_key]);
 	$time_sleep = rand(3000,4200);
 	info('Sleep: '.$time_sleep.' sec.');
+	sleep($time_sleep);
 }
 
 function createContent($title,$list)
