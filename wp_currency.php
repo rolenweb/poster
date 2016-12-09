@@ -4,11 +4,9 @@ require 'vendor/autoload.php';
 use Sabre\Xml\Reader;
 use Simplon\Mysql\Mysql;
 
-	$wp_data = explode('|', file('wp_login.txt')[2]);
-
-	$url = rtrim($wp_data[0]);
-	$user = rtrim($wp_data[1]);
-	$psw = rtrim($wp_data[2]);
+	$url = $wp_login[2]['url'];
+    $user = $wp_login[2]['login'];
+    $psw = $wp_login[2]['pass'];
 
     if (posted()) {
         info('The curency rates is posted');

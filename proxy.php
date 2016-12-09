@@ -1,6 +1,7 @@
 <?php
 require 'vendor/autoload.php';
 require 'tools/CurlClient.php';
+require 'config/wp.php';
 
 use Goutte\Client;
 use tools\CurlClient;
@@ -8,11 +9,10 @@ use Jitsu\RegexUtil;
 use Simplon\Mysql\Mysql;
 use Sabre\Xml\Reader;
 
-$wp_data = explode('|', file('wp_login.txt')[3]);
 
-$url = rtrim($wp_data[0]);
-$user = rtrim($wp_data[1]);
-$psw = rtrim($wp_data[2]);
+$url = $wp_login[4]['url'];
+$user = $wp_login[4]['login'];
+$psw = $wp_login[4]['pass'];
 
 $type_proxy = ['allproxy','socks5','socks4','socks45','US','UK','RU','AR','FR','BR','CA','CN','CO','CZ','DE','HK','IN','ID','IR','IT','KR','MX','NL','SG'];
 
@@ -140,6 +140,7 @@ for (;;) {
 
 	$content = createContent($title,$proxy);
 	$tags = findTags($title);
+
 	$content['tags'] = [];
 	$post = post($url,$user,$psw,$content['title'],$content['description'],$tags);
     error($post);

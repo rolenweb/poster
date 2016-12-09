@@ -3,6 +3,7 @@ cookiefile
 runtime
 config/db.php
 config/db2.php
+config/wp.php
 wp_login.txt
 composer.phar
 composer.lock
