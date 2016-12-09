@@ -148,7 +148,8 @@ for (;;) {
 	$current_key = array_search($schedule[0],$type_proxy);
 	$next_key = ($current_key < count($type_proxy)-1) ? $current_key+1 : 0;
 	file_put_contents($f_schedule, $type_proxy[$next_key]);
-	die;
+	$time_sleep = rand(3000,4200);
+	info('Sleep: '.$time_sleep.' sec.');
 }
 
 function createContent($title,$list)
