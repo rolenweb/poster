@@ -28,7 +28,7 @@ for (;;) {
 		error('Schedule is null');
 		break;
 	}
-
+	info('Start: '.$schedule[0]);
 	switch ($schedule[0]) {
 		case 'allproxy':
 			$proxy = parseAllProxy();
