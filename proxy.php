@@ -130,12 +130,12 @@ for (;;) {
 	}
 	if (empty($proxy)) {
 		error('Proxy: '.$schedule[0].' is null');
-		break;
+		continue;
 	}
 
 	if (empty($title)) {
 		error('Title is null');
-		break;
+		continue;
 	}
 
 	$content = createContent($title,$proxy);
